@@ -1,0 +1,30 @@
+{
+  "name": "@deadb17/props",
+  "version": "1.0.0-alpha.0",
+  "description": "Getters and setters",
+  "author": "DEADB17 <deadb17@gmail.com>",
+  "license": "GPL-3.0",
+  "repository": "https://github.com/DEADB17/props",
+  "issues": "https://github.com/DEADB17/props/issues",
+  "main": "index.js",
+  "module": "index-es6.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@deadb17/eslint-config": "^1.0.1",
+    "eslint": "^3.19.0",
+    "npm-run-all": "^4.0.2",
+    "reify": "^0.7.5",
+    "rollup": "^0.41.6",
+    "tape": "^4.6.3"
+  },
+  "scripts": {
+    "test": "tape --require reify test.js",
+    "lint": "eslint '*.js'",
+    "build": "rollup --format cjs --input index-es6.js --output index.js",
+    "preversion": "run-p test lint",
+    "postversion": "git push && git push --tags"
+  },
+  "eslintConfig": {
+    "extends": "@deadb17/eslint-config"
+  }
+}
