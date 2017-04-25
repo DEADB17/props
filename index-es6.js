@@ -26,13 +26,13 @@ export function walk(getter, path, obj, alt) {
 
 const isArray = Array.isArray;
 
-export function gets(path, obj, alt) {
+export function get(path, obj, alt) {
     return isArray(path)
         ? walk(get1, path, obj, alt)
         : get1(path, obj, alt);
 }
 
-export function owns(path, obj, alt) {
+export function own(path, obj, alt) {
     return isArray(path)
         ? walk(own1, path, obj, alt)
         : own1(path, obj, alt);
@@ -71,13 +71,13 @@ function error(current, key, root, path, pathIndex, args) {
     throw Object.assign(err, {current, key, root, path, pathIndex, args});
 }
 
-export function sets(path, obj, val) {
+export function set(path, obj, val) {
     return isArray(path)
         ? walkAndSet(get1, error, () => val, path, obj)
         : set1(path, obj, val);
 }
 
-export function maps(fn, path, obj, ...args) {
+export function map(fn, path, obj, ...args) {
     return isArray(path)
         ? walkAndSet(get1, error, fn, path, obj, ...args)
         : map1(fn, path, obj, ...args);

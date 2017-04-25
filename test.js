@@ -1,5 +1,5 @@
 import {test} from 'tape';
-import {get1, own1, gets, owns, sets, maps} from './index-es6';
+import {get1, own1, get, own, set, map} from './index-es6';
 
 function basic(fn, str, cons) {
     const name = fn.name;
@@ -48,24 +48,24 @@ basic(get1, 'prototype', Object.create);
 
 basic(own1, 'own', id);
 
-basic(gets, 'own', id);
-basic(gets, 'prototype', Object.create);
+basic(get, 'own', id);
+basic(get, 'prototype', Object.create);
 
-basic(owns, 'own', id);
+basic(own, 'own', id);
 
 
-test('sets', t => {
+test('set', t => {
     const obj = {a: {b: [{ c: {original: 'original'}}]}};
-    t.same(sets(['a', 'b', 0, 'c', 'original'], obj, 'new'),
+    t.same(set(['a', 'b', 0, 'c', 'original'], obj, 'new'),
          {a: {b: [{ c: {original: 'new'}}]}},
          'sets a new value at the right entry');
     t.end();
 });
 
-test('maps', t => {
+test('map', t => {
     const obj = {a: {b: [{ c: {original: 'original'}}]}};
     const fn = (old, newv, extra, param) => `${old} + ${newv} + ${extra} + ${param}`;
-    t.same(maps(fn, ['a', 'b', 0, 'c', 'original'], obj, 'new', 'extra', 'param'),
+    t.same(map(fn, ['a', 'b', 0, 'c', 'original'], obj, 'new', 'extra', 'param'),
          {a: {b: [{ c: {original: 'original + new + extra + param'}}]}},
          'maps a new value at the right entry');
     t.end();
