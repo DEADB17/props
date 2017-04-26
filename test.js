@@ -43,12 +43,12 @@ function basic(fn, str, cons) {
 
 function id(it) { return it; }
 
-basic(get1, 'own', id);
+basic(get1, 'get', id);
 basic(get1, 'prototype', Object.create);
 
 basic(own1, 'own', id);
 
-basic(get, 'own', id);
+basic(get, 'get', id);
 basic(get, 'prototype', Object.create);
 
 basic(own, 'own', id);
