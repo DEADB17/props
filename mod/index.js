@@ -51,35 +51,35 @@ export function map1(fn, key, obj, ...args) {
     return obj;
 }
 
-export function walkAndSet(getter, err, fn, path, obj, ...args) {
-    const len = path.length;
-    let current, key;
-    for (let i = 0, it = obj; i < len; i += 1) {
-        key = path[i];
-        current = it;
-        it = getter(key, it, BRK);
-        if (it === BRK) { return err(current, key, obj, path, i, args); }
-    }
-    current[key] = fn(current[key], ...args);
-    return obj;
-}
-
-function error(current, key, root, path, pathIndex, args) {
+export function error(current, key, root, path, pathIndex, args) {
     const pathStr = path.join(' > ');
     const message = `${key} is not defined in ${pathStr} @ ${pathIndex}`;
     const err = new ReferenceError(message);
     throw Object.assign(err, {current, key, root, path, pathIndex, args});
 }
 
+export function walkAndSet(getter, fn, path, obj, ...args) {
+    const len = path.length;
+    let current, key;
+    for (let i = 0, it = obj; i < len; i += 1) {
+        key = path[i];
+        current = it;
+        it = getter(key, it, BRK);
+        if (it === BRK) { return error(current, key, obj, path, i, args); }
+    }
+    current[key] = fn(current[key], ...args);
+    return obj;
+}
+
 export function set(path, obj, val) {
     return isArray(path)
-        ? walkAndSet(get1, error, () => val, path, obj)
+        ? walkAndSet(get1, () => val, path, obj)
         : set1(path, obj, val);
 }
 
 export function map(fn, path, obj, ...args) {
     return isArray(path)
-        ? walkAndSet(get1, error, fn, path, obj, ...args)
+        ? walkAndSet(get1, fn, path, obj, ...args)
         : map1(fn, path, obj, ...args);
 }
 
