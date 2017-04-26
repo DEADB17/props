@@ -41,7 +41,7 @@ export function error(current, key, root, path, pathIndex, args) {
     const pathStr = path.join(' > ');
     const message = `${key} is not defined in ${pathStr} @ ${pathIndex}`;
     const err = new ReferenceError(message);
-    throw Object.assign(err, {current, key, root, path, pathIndex, args});
+    return Object.assign(err, {current, key, root, path, pathIndex, args});
 }
 
 export function walkAndSet(getter, fn, path, obj, ...args) {
@@ -51,7 +51,7 @@ export function walkAndSet(getter, fn, path, obj, ...args) {
         key = path[i];
         current = it;
         it = getter(key, it, BRK);
-        if (it === BRK) { return error(current, key, obj, path, i, args); }
+        if (it === BRK) { throw error(current, key, obj, path, i, args); }
     }
     current[key] = fn(current[key], ...args);
     return obj;
