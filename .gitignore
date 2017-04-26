@@ -155,4 +155,4 @@ flycheck_*.el
 
 
 # Project
-/index.js
+/cjs/

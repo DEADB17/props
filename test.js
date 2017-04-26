@@ -1,5 +1,5 @@
 import {test} from 'tape';
-import {get1, own1, get, own, set, map} from './index-es6';
+import {get1, own1, get, own, set, map} from './mod/';
 
 function basic(fn, str, cons) {
     const name = fn.name;

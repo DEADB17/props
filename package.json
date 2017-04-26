@@ -6,8 +6,8 @@
   "license": "GPL-3.0",
   "repository": "https://github.com/DEADB17/props",
   "issues": "https://github.com/DEADB17/props/issues",
-  "main": "index.js",
-  "module": "index-es6.js",
+  "main": "cjs/index.js",
+  "module": "mod/index.js",
   "dependencies": {},
   "devDependencies": {
     "@deadb17/eslint-config": "^1.0.1",
@@ -19,8 +19,8 @@
   },
   "scripts": {
     "test": "tape --require reify test.js",
-    "lint": "eslint '*.js'",
-    "build": "rollup --format cjs --input index-es6.js --output index.js",
+    "lint": "eslint 'es6/*.js' '*.js'",
+    "build": "rollup --input mod/index.js --output cjs/index.js --format cjs",
     "preversion": "run-p test lint",
     "postversion": "git push && git push --tags"
   },
