@@ -1,5 +1,6 @@
 import {test} from 'tape';
-import {get1, own1, get, own, set, map} from './mod/';
+import {get1, own1} from './mod/private';
+import {get, own, set, map} from './mod/';
 
 function basic(fn, str, cons) {
     const name = fn.name;
