@@ -38,8 +38,8 @@ export function map1(fn, key, obj, ...args) {
 }
 
 export function error(current, key, root, path, pathIndex, args) {
-    const pathStr = path.join(' > ');
-    const message = `${key} is not defined in ${pathStr} @ ${pathIndex}`;
+    const pathStr = path.join(', ');
+    const message = `${key} is not defined in [${pathStr}][${pathIndex}]`;
     const err = new ReferenceError(message);
     return Object.assign(err, {current, key, root, path, pathIndex, args});
 }
