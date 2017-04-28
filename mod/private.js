@@ -15,8 +15,7 @@ const BRK = {};
 export function walk(getter, path, obj, alt) {
     const len = path.length;
     let it = obj;
-    let key;
-    for (let i = 0; i < len; i += 1) {
+    for (let i = 0, key; i < len; i += 1) {
         key = path[i];
         it = getter(key, it, BRK);
         if (it === BRK) { return alt; }
@@ -46,13 +45,13 @@ export function error(current, key, root, path, pathIndex, args) {
 
 export function walkAndSet(getter, fn, path, obj, ...args) {
     const len = path.length;
-    let current, key;
-    for (let i = 0, it = obj; i < len; i += 1) {
+    let container, key;
+    for (let i = 0, val = obj; i < len; i += 1) {
         key = path[i];
-        current = it;
-        it = getter(key, it, BRK);
-        if (it === BRK) { throw error(current, key, obj, path, i, args); }
+        container = val;
+        val = getter(key, val, BRK);
+        if (val === BRK) { throw error(container, key, obj, path, i, args); }
     }
-    current[key] = fn(current[key], ...args);
+    container[key] = fn(container[key], ...args);
     return obj;
 }
