@@ -1,8 +1,8 @@
 import {test} from 'tape';
-import {get1, own1} from './mod/private';
-import {get, own, set, map} from './mod/';
+import {error} from './mod/private';
+import {walk, get, own, set, ro, wo, rw} from './mod/';
 
-function basic(fn, str, cons) {
+function inAndOwn(fn, str, cons) {
     const name = fn.name;
     test(`${name} accessing ${str} property`, t => {
         t.is(fn('key', cons({key: 'expected'})),
@@ -32,42 +32,104 @@ function basic(fn, str, cons) {
     });
 }
 
-// function basic(fn, str, cons) {
-//     const name = fn.name;
-//     test(`${name} accessing ${str} property`, t => {
-//         t.is(fn('key', cons({key: 'expected'})),
-//              'expected',
-//              `${name} gets existing key`);
-//         t.end();
-//     });
-// }
+function onlyOwn(fn) {
+    const name = fn.name;
+    const str = 'prototype';
+    const cons = Object.create;
+    test(`${name} accessing ${str} property`, t => {
+        const unObj = cons({key: 'unexpected'});
+        t.is(fn('key', unObj),
+             undefined,
+             `${name} returns undefined for existing key in the prototype`);
+        t.is(fn('key', unObj, 'expected'),
+             'expected',
+             `${name} returns alt for for existing key in the prototype when provided`);
+
+        const unArray = cons(['unexpected']);
+        t.is(fn(1, unArray),
+             undefined,
+             `${name} returns undefined for existing array index in the prototype`);
+        t.is(fn(1, unArray, 'expected'),
+             'expected',
+             `${name} returns alt for existing array index in the prototype when provided`);
+        t.end();
+    });
+}
 
 function id(it) { return it; }
 
-basic(get1, 'get', id);
-basic(get1, 'prototype', Object.create);
+inAndOwn(get, 'own', id);
+inAndOwn(get, 'prototype', Object.create);
 
-basic(own1, 'own', id);
+inAndOwn(own, 'own', id);
+onlyOwn(own);
 
-basic(get, 'get', id);
-basic(get, 'prototype', Object.create);
+test('set object', t => {
+    const obj = {key: 'original'};
+    t.same(
+        set('key', obj, 'new'),
+        {key: 'new'},
+        'sets a new value');
+    t.same(
+        set('key2', obj, 'new'),
+        {key: 'new', key2: 'new'},
+        'adds a new value');
 
-basic(own, 'own', id);
-
-
-test('set', t => {
-    const obj = {a: {b: [{ c: {original: 'original'}}]}};
-    t.same(set(['a', 'b', 0, 'c', 'original'], obj, 'new'),
-         {a: {b: [{ c: {original: 'new'}}]}},
-         'sets a new value at the right entry');
+    const original = {key: 'original'};
+    const proto = Object.create(original);
+    set('key', proto, 'new');
+    t.same(proto,
+           {key: 'new'},
+           'adds a new value to the base object');
+    t.same(Object.getPrototypeOf(proto),
+           original,
+           'does not change the object\'s prototype');
     t.end();
 });
 
-test('map', t => {
+test('set array', t => {
+    const obj = ['original'];
+    t.same(set(0, obj, 'new'),
+           ['new'],
+           'sets a new value');
+    t.same(set(1, obj, 'new'),
+           ['new', 'new'],
+           'adds a new value');
+
+    const original = ['original'];
+    const proto = Object.create(original);
+    set(0, proto, 'new');
+    t.same(proto,
+           ['new'],
+           'adds a new value to the base array');
+    t.same(Object.getPrototypeOf(proto),
+           original,
+           'does not change the array\'s prototype');
+    t.end();
+});
+
+test('ro - read only property', t => {
     const obj = {a: {b: [{ c: {original: 'original'}}]}};
-    const fn = (old, newv, extra, param) => `${old} + ${newv} + ${extra} + ${param}`;
-    t.same(map(fn, ['a', 'b', 0, 'c', 'original'], obj, 'new', 'extra', 'param'),
-         {a: {b: [{ c: {original: 'original + new + extra + param'}}]}},
-         'maps a new value at the right entry');
+
+    t.is(ro(['a', 'b', 0, 'c', 'original'], obj, get)(),
+         'original',
+         'long mixed path');
+
+    t.same(ro(['a'], obj, get)(),
+           {b: [{ c: {original: 'original'}}]},
+           'one element path');
+
+    t.same(ro('a', obj, get)(),
+           {b: [{ c: {original: 'original'}}]},
+           'string key');
+
+    t.end();
+});
+
+test('wo - write only property', t => {
+    const obj = {a: {b: [{ c: {original: 'original'}}]}};
+    const wop = wo(['a', 'b', 0, 'c', 'original'], obj, get);
+    const expected = {a: {b: [{ c: {original: 'modified'}}]}};
+    t.same(wop('modified'), expected);
     t.end();
 });
