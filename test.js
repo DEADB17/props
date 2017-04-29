@@ -1,6 +1,6 @@
 import {test} from 'tape';
 import {error} from './mod/private';
-import {walk, get, own, set, ro, wo, rw} from './mod/';
+import {get1, own1, walk, get, set, map, prop} from './mod/';
 
 function inAndOwn(fn, str, cons) {
     const name = fn.name;
@@ -58,11 +58,11 @@ function onlyOwn(fn) {
 
 function id(it) { return it; }
 
-inAndOwn(get, 'own', id);
-inAndOwn(get, 'prototype', Object.create);
+inAndOwn(get1, 'own', id);
+inAndOwn(get1, 'prototype', Object.create);
 
-inAndOwn(own, 'own', id);
-onlyOwn(own);
+inAndOwn(own1, 'own', id);
+onlyOwn(own1);
 
 test('set object', t => {
     const obj = {key: 'original'};
@@ -131,5 +131,44 @@ test('wo - write only property', t => {
     const wop = wo(['a', 'b', 0, 'c', 'original'], obj, get);
     const expected = {a: {b: [{ c: {original: 'modified'}}]}};
     t.same(wop('modified'), expected);
+    t.end();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+
+test.only('x', t => {
+    const state = {
+        model: {
+            path: ['none'],
+            visibility: 'closed',
+            options: ['empty', null, null],
+        },
+        net: {
+            pending: {},
+        },
+        dom: {
+            temp: null,
+        }
+    };
+
+    const mpath = prop(
+        root => root.model.path,
+        (root, ...items) => {
+            root.model.path.push(...items);
+            return root;
+        });
+
+    const mvis = prop(
+        root => root.model.visibility,
+        (root, val) => {
+            root.model.visibility = val;
+            return root;
+        });
+
+    mpath(state, 'test', 1, 2, 7);
+
+    t.same(mpath(state), ['none', 'test', 1, 2, 7]);
+    t.same(mvis(state, 'opened').model.visibility, 'opened');
+    // t.same()
     t.end();
 });

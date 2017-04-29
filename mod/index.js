@@ -1,33 +1,26 @@
 /* eslint no-confusing-arrow: 'off' */
 
-export function get(key, obj, alt) {
+export function get1(key, obj, alt) {
     return key in obj ? obj[key] : alt;
 }
 
 const hasOwn = Object.prototype.hasOwnProperty;
 
-export function own(key, obj, alt) {
+export function own1(key, obj, alt) {
     return hasOwn.call(obj, key) ? obj[key] : alt;
-}
-
-export function set(key, obj, val) {
-    obj[key] = val;
-    return obj;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-import {error} from './private';
-
 const BRK = {};
 
-export function walk(getter, path, root) {
+export function walk(getFn, path, root, esc, alt) {
     const len = path.length;
     let obj = root;
     for (let i = 0; i < len; i += 1) {
-        obj = getter(path[i], obj, BRK);
-        if (obj === BRK) { throw error(getter, root, path, i); }
+        obj = getFn(path[i], obj, BRK);
+        if (obj === BRK) { return esc(alt, root, path, i); }
     }
     return obj;
 }
@@ -35,36 +28,43 @@ export function walk(getter, path, root) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function destruct(getter, path, root) {
+function id(val) { return val; }
+
+export function get(path, getFn, alt) {
+    const isArray = Array.isArray(path);
+    return function getter(root) {
+        return isArray ? walk(getFn, path, root, id, alt) : getFn(path, root, alt);
+    };
+}
+
+import {error} from './private';
+
+export function set(path, getFn) {
     const len = path.length - 1;
     const isArray = Array.isArray(path);
-    return {
-        key: isArray ? path[len] : path,
-        obj: isArray ? walk(getter, path.slice(0, len), root) : root,
-    };
-}
-
-export function ro(path, root, getter = get) {
-    const {key, obj} = destruct(getter, path, root);
-    return function roprop() {
-        return getter(key, obj);
-    };
-}
-
-export function wo(path, root, getter = get) {
-    const {key, obj} = destruct(getter, path, root);
-    return function woprop(val) {
-        if (arguments.length < 1) { throw new Error(`Write only property ${path.join('.')}`); }
+    const key = isArray ? path[len] : path;
+    const shortPath = isArray ? path.slice(0, len) : null;
+    return function setter(root, val) {
+        const obj = isArray ? walk(getFn, shortPath, root, error) : root;
         obj[key] = val;
         return root;
     };
 }
 
-export function rw(path, root, getter = get) {
-    const {key, obj} = destruct(getter, path, root);
-    return function rwprop(val) {
-        if (arguments.length < 1) { return getter(key, obj); }
-        obj[key] = val;
+export function map(path, getFn, setFn) {
+    const len = path.length - 1;
+    const isArray = Array.isArray(path);
+    const key = isArray ? path[len] : path;
+    const shortPath = isArray ? path.slice(0, len) : null;
+    return function mapper(root, ...args) {
+        const obj = isArray ? walk(getFn, shortPath, root, error) : root;
+        setFn(obj[key], ...args);
         return root;
+    };
+}
+
+export function prop(getFn, setFn) {
+    return function propper(root, ...args) {
+        return arguments.length > 1 ? setFn(root, ...args) : getFn(root);
     };
 }
