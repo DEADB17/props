@@ -1,7 +1,6 @@
 /* eslint no-magic-numbers: off, no-shadow: off */
 
 import {test} from 'tape';
-import {makeGet, makeSet, makeProp} from './mod/';
 
 function argLen(n) { return n === 1 ? 'one argument' : `${n} arguments`; }
 
@@ -31,18 +30,111 @@ function makeSampleArray() {
     ];
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+import {makeSafeGet, makeSafeOwn} from './mod/';
+
+function testSafeBasics(maker, outLen) {
+    test(maker.name, t => {
+        t.ok(typeof maker === 'function', 'is a function');
+        t.is(maker.length, 0, `it takes at least ${argLen(1)}`);
+        t.throws(() => maker(), TypeError, 'with fewer arguments it throws a TypeError');
+        t.doesNotThrow(() => maker(1, 2, 3, 4), 'extra arguments are accepted');
+
+        t.test(`calling ${maker.name}`, t => {
+            const ap = maker('a');
+
+            t.ok(typeof ap === 'function', 'it returns a function');
+            t.is(ap.length, outLen, `it returns a function of ${argLen(outLen)}`);
+            t.end();
+        });
+        t.end();
+    });
+}
+
+function inAndOwn(fn, str, cons) {
+    const name = fn.name;
+    test(`${name} accessing ${str} property`, t => {
+        t.is(fn('key', cons({key: 'expected'})),
+             'expected',
+             `${name} gets existing key`);
+
+        const unObj = cons({key: 'unexpected'});
+        t.is(fn('key2', unObj),
+             undefined,
+             `${name} returns undefined for missing key`);
+        t.is(fn('key2', unObj, 'expected'),
+             'expected',
+             `${name} returns alt for missing key when provided`);
+
+        t.is(fn(0, cons(['expected'])),
+             'expected',
+             `${name} gets existing array index`);
+
+        const unArray = cons(['unexpected']);
+        t.is(fn(1, unArray),
+             undefined,
+             `${name} returns undefined for missing array index`);
+        t.is(fn(1, unArray, 'expected'),
+             'expected',
+             `${name} returns alt for missing array index when provided`);
+        t.end();
+    });
+}
+
+function onlyOwn(fn) {
+    const name = fn.name;
+    const str = 'prototype';
+    const cons = Object.create;
+    test(`${name} accessing ${str} property`, t => {
+        const unObj = cons({key: 'unexpected'});
+        t.is(fn('key', unObj),
+             undefined,
+             `${name} returns undefined for existing key in the prototype`);
+        t.is(fn('key', unObj, 'expected'),
+             'expected',
+             `${name} returns alt for for existing key in the prototype when provided`);
+
+        const unArray = cons(['unexpected']);
+        t.is(fn(1, unArray),
+             undefined,
+             `${name} returns undefined for existing array index in the prototype`);
+        t.is(fn(1, unArray, 'expected'),
+             'expected',
+             `${name} returns alt for existing array index in the prototype when provided`);
+        t.end();
+    });
+}
+
+function id(it) { return it; }
+
+testSafeBasics(makeSafeGet, 1);
+testSafeBasics(makeSafeOwn, 1);
+
+// inAndOwn(makeSafeGet, 'own', id);
+// inAndOwn(makeSafeGet, 'prototype', Object.create);
+
+// inAndOwn(makeSafeOwn, 'own', id);
+// onlyOwn(makeSafeOwn);
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+import {makeGet, makeSet, makeProp} from './mod/';
+
 function testBasics(maker, inLen, outLen) {
     test(maker.name, t => {
         t.ok(typeof maker === 'function', 'is a function');
         t.is(maker.length, inLen, `takes ${argLen(inLen)}`);
+        t.throws(() => maker(), TypeError, 'with fewer arguments throws a TypeError');
+        t.throws(() => maker(1, 2, 3, 4), TypeError, 'with extra arguments throws a TypeError');
 
         t.test(`calling ${maker.name}`, t => {
             const ap = maker('a');
 
             t.ok(typeof ap === 'function', 'returns a function');
             t.is(ap.length, outLen, `returns a function of ${argLen(outLen)}`);
-            t.throws(() => maker(), TypeError, 'with fewer arguments throws a TypeError');
-            t.throws(() => maker(1, 2, 3, 4), TypeError, 'with extra arguments throws a TypeError');
             t.end();
         });
         t.end();
