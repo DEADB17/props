@@ -18,8 +18,9 @@
     "tape": "^4.6.3"
   },
   "scripts": {
-    "test": "tape --require reify test.js",
-    "lint": "eslint 'es6/*.js' '*.js'",
+    "test1": "tape --require reify",
+    "test": "npm run test1 test.js",
+    "lint": "eslint 'mod/*.js' '*.js'",
     "build": "rollup --input mod/index.js --output cjs/index.js --format cjs",
     "preversion": "run-p test lint",
     "postversion": "git push && git push --tags"
