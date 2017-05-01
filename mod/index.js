@@ -169,5 +169,111 @@ export function makeProp(key) {
  * @returns {*} The current value, or the root container.
  */
 
+
+////////////////////////////////////////
+// 2 keys
+
+/**
+ * 2 key version of `makeGet`.
+ *
+ * @arg {...(string|number)} key1 An string or an integer.
+ * @arg {...(string|number)} key2 An string or an integer.
+ * @returns {getter} Getter function.
+ */
+export function makeGet2(key1, key2) {
+    if (arguments.length !== 1) {
+        throw new TypeError('makeGet2 requires 2 arguments');
+    }
+    return function get(root) { return root[key1][key2]; };
+}
+
+/**
+ * 2 key version of `makeSet`.
+ *
+ * @arg {...(string|number)} key1 An string or an integer.
+ * @arg {...(string|number)} key2 An string or an integer.
+ * @returns {setter} Setter function.
+ */
+export function makeSet2(key1, key2) {
+    if (arguments.length !== 1) {
+        throw new TypeError('makeSet2 requires 2 arguments');
+    }
+    return function set(root, val) {
+        root[key1][key2] = val;
+        return root;
+    };
+}
+
+/**
+ * 2 key version of `makeProp`.
+ *
+ * @arg {...(string|number)} key1 An string or an integer.
+ * @arg {...(string|number)} key2 An string or an integer.
+ * @returns {prop} Prop function.
+ */
+export function makeProp2(key1, key2) {
+    if (arguments.length !== 1) {
+        throw new TypeError('makeProp2 requires 1 argument');
+    }
+    return function prop(root, val) {
+        if (arguments.length <= 1) { return root[key1][key2]; }
+        root[key1][key2] = val;
+        return root;
+    };
+}
+
+
+////////////////////////////////////////
+// 3 keys
+
+/**
+ * 3 key version of `makeGet`.
+ *
+ * @arg {...(string|number)} key1 An string or an integer.
+ * @arg {...(string|number)} key2 An string or an integer.
+ * @arg {...(string|number)} key3 An string or an integer.
+ * @returns {getter} Getter function.
+ */
+export function makeGet3(key1, key2, key3) {
+    if (arguments.length !== 1) {
+        throw new TypeError('makeGet3 requires 3 arguments');
+    }
+    return function get(root) { return root[key1][key2][key3]; };
+}
+
+/**
+ * 3 key version of `makeSet`.
+ *
+ * @arg {...(string|number)} key1 An string or an integer.
+ * @arg {...(string|number)} key2 An string or an integer.
+ * @arg {...(string|number)} key3 An string or an integer.
+ * @returns {setter} Setter function.
+ */
+export function makeSet3(key1, key2, key3) {
+    if (arguments.length !== 1) {
+        throw new TypeError('makeSet3 requires 3 arguments');
+    }
+    return function set(root, val) {
+        root[key1][key2][key3] = val;
+        return root;
+    };
+}
+
+/**
+ * 3 key version of `makeProp`.
+ *
+ * @arg {...(string|number)} key1 An string or an integer.
+ * @arg {...(string|number)} key2 An string or an integer.
+ * @arg {...(string|number)} key3 An string or an integer.
+ * @returns {prop} Prop function.
+ */
+export function makeProp3(key1, key2, key3) {
+    if (arguments.length !== 1) {
+        throw new TypeError('makeProp3 requires 3 argument');
+    }
+    return function prop(root, val) {
+        if (arguments.length <= 1) { return root[key1][key2][key3]; }
+        root[key1][key2][key3] = val;
+        return root;
     };
 }
